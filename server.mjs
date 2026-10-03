@@ -1,5 +1,6 @@
+import {createCloudHandler,cloudConfigured} from './server-cloud.mjs';
 import {handleNearby} from './server-nearby.mjs';
-﻿import http from 'node:http';
+import http from 'node:http';
 import {initFeatures,handleFeatures} from './server-features.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import {randomBytes,scryptSync,timingSafeEqual} from 'node:crypto';
@@ -8,13 +9,14 @@ import {resolve,extname,dirname} from 'node:path';
 import {treks} from './src/data.js';
 import {estimate,statistics} from './src/stats.js';
 try{process.loadEnvFile()}catch{}
+const cloudHandler=createCloudHandler();
 const databasePath=process.env.DATABASE_PATH||'data/vanora.sqlite';mkdirSync(dirname(databasePath),{recursive:true});
 const db=new DatabaseSync(databasePath);db.exec(`PRAGMA foreign_keys=ON; CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT UNIQUE,password TEXT,name TEXT,experience TEXT,regions TEXT); CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user TEXT,expires INTEGER); CREATE TABLE IF NOT EXISTS activities(id TEXT PRIMARY KEY,user TEXT,body TEXT,shared INTEGER DEFAULT 0); CREATE TABLE IF NOT EXISTS social(user TEXT,activity TEXT,kind TEXT,body TEXT,PRIMARY KEY(user,activity,kind)); CREATE TABLE IF NOT EXISTS saved(user TEXT,trek TEXT,PRIMARY KEY(user,trek));`);
 initFeatures(db);
 const production=process.argv.includes('--production');const vite=production?null:await (await import('vite')).createServer({server:{middlewareMode:true},appType:'spa'});
 const safeUser=u=>u?{id:u.id,name:u.name,email:u.email,experience:u.experience,regions:JSON.parse(u.regions)}:null;
 const hash=(p,s)=>scryptSync(p,s,64).toString('hex');
-const server=http.createServer(async(req,res)=>{if(!req.url.startsWith('/api/')){if(vite)return vite.middlewares(req,res);let path;try{path=resolve('dist','.'+decodeURIComponent(req.url.split('?')[0]))}catch{res.writeHead(400);return res.end('Invalid URL')}if(path!==resolve('dist')&&!path.startsWith(resolve('dist')+'/')&&!path.startsWith(resolve('dist')+'\\')){res.writeHead(403);return res.end()}if(!existsSync(path)||!extname(path))path=resolve('dist/index.html');try{res.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'})[extname(path)]||'application/octet-stream');return res.end(readFileSync(path))}catch{res.writeHead(404);return res.end()}}
+const server=http.createServer(async(req,res)=>{if(req.url.startsWith('/api/')&&cloudConfigured()&&!req.url.startsWith('/api/nearby'))return cloudHandler(req,res);if(!req.url.startsWith('/api/')){if(vite)return vite.middlewares(req,res);let path;try{path=resolve('dist','.'+decodeURIComponent(req.url.split('?')[0]))}catch{res.writeHead(400);return res.end('Invalid URL')}if(path!==resolve('dist')&&!path.startsWith(resolve('dist')+'/')&&!path.startsWith(resolve('dist')+'\\')){res.writeHead(403);return res.end()}if(!existsSync(path)||!extname(path))path=resolve('dist/index.html');try{res.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webmanifest':'application/manifest+json'})[extname(path)]||'application/octet-stream');return res.end(readFileSync(path))}catch{res.writeHead(404);return res.end()}}
 const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data))};
 try{if(req.method!=='GET'&&req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)return send(403,{error:'Origin rejected'});let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>2500000)return send(413,{error:'Upload too large. Choose a photo under 1.5 MB.'})}const body=raw?JSON.parse(raw):{};const token=req.headers.cookie?.match(/(?:^|; )vanora=([a-f0-9]+)/)?.[1];const session=token&&db.prepare('SELECT * FROM sessions WHERE token=? AND expires>?').get(token,Date.now());const user=session&&db.prepare('SELECT * FROM users WHERE id=?').get(session.user);const url=req.url.split('?')[0];if(req.method!=='GET'&&req.method!=='POST')return send(405,{error:'Method not allowed'});if(req.method==='GET'&&!['/api/me','/api/feed','/api/saved','/api/activities','/api/plans','/api/passport','/api/nominations'].includes(url))return send(405,{error:'Use POST for this action.'});
 if(url==='/api/nearby')return await handleNearby({body,send});

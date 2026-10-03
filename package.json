@@ -7,9 +7,9 @@
     "dev": "node server.mjs",
     "build": "vite build",
     "start": "node server.mjs --production",
-    "lint": "node --check server.mjs && node --check server-features.mjs && node --check src/main.js && node --check src/atlas.js && node --check src/features.js && node --check src/planning.js && node --check src/catalogue.js && node --check src/nearby.js && node --check src/nearby-data.js && node --check server-nearby.mjs",
+    "lint": "node --check server.mjs && node --check server-features.mjs && node --check src/main.js && node --check src/atlas.js && node --check src/features.js && node --check src/planning.js && node --check src/catalogue.js && node --check src/nearby.js && node --check src/nearby-data.js && node --check server-nearby.mjs && node --check server-cloud.mjs",
     "test": "node --test tests/*.test.mjs",
-    "test:browser": "node tests/browser.mjs && node tests/states.mjs && node tests/atlas-browser.mjs && node tests/stories-browser.mjs && node tests/nearby-browser.mjs",
+    "test:browser": "node tests/browser.mjs && node tests/states.mjs && node tests/atlas-browser.mjs && node tests/stories-browser.mjs && node tests/nearby-browser.mjs && node tests/cloud-browser.mjs",
     "test:stories": "node --check src/stories.js && node --check src/story-view.js && node --test tests/stories.test.mjs"
   },
   "dependencies": {
@@ -18,6 +18,10 @@
     "vite": "^7.3.6"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.63.0"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

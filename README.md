@@ -4,6 +4,8 @@
 
 ## Run locally
 
+For the Supabase-backed Vercel deployment, use [the hosted setup guide](supabase/README.md). Hosted APIs use Supabase Auth and a persistent PostgreSQL database with row-level access rules. Local SQLite data and accounts are not uploaded or silently migrated. Supabase connection details and the SQL migration must be configured before the cloud account flows work.
+
 Requires Node 24 (uses `node:sqlite`) and npm.
 
 ```sh

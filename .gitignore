@@ -8,3 +8,6 @@ artifacts/
 *.sqlite
 *.sqlite-*
 *.log
+.vercel/
+
+.vercel
