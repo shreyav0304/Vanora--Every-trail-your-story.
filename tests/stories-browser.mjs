@@ -1,0 +1,11 @@
+import {chromium} from '@playwright/test';import assert from 'node:assert/strict';
+const b=await chromium.launch({channel:'msedge',headless:true});
+try{
+ const c=await b.newContext({viewport:{width:1440,height:1050}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.goto('http://localhost:5173');await p.locator('#clear-filters').click();await p.getByRole('button',{name:'Explore Rajmachi Fort'}).click();await p.getByRole('link',{name:'Read this place’s story'}).click();await p.getByRole('heading',{name:'Two forts, one name'}).waitFor();
+ assert.match(await p.locator('.fieldnote').innerText(),/Shrivardhan and Manaranjan/);assert.equal(await p.locator('.fieldnote-source a').getAttribute('rel'),'noopener noreferrer');await p.screenshot({path:'artifacts/stories-desktop.png',fullPage:true});
+ await p.setViewportSize({width:390,height:844});await p.locator('#trail-stories').scrollIntoViewIfNeeded();await p.screenshot({path:'artifacts/stories-mobile.png'});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await p.locator('#back').click();await p.locator('#search').fill('Ashoka');assert.equal(await p.locator('.trek-card').count(),1);await p.getByRole('button',{name:'Explore Kalsi - Lakhamandal'}).click();await p.getByRole('heading',{name:'A message carved into rock'}).waitFor();
+ await p.locator('#header-profile').click();await p.locator('#demo-login').click();await p.locator('#clear-filters').click();await p.getByRole('button',{name:'Explore Triund'}).click();const save=p.locator('[data-save=triund]');if(!await save.evaluate(el=>el.classList.contains('is-saved')))await save.click();await p.locator('[data-page=saved]').click();await p.evaluate(()=>navigator.serviceWorker.ready);await p.reload();await p.getByRole('button',{name:'Explore Triund'}).waitFor();await c.setOffline(true);await p.reload();await p.getByRole('button',{name:'Explore Triund'}).click();await p.getByRole('heading',{name:'A window onto Kangra'}).waitFor();assert.match(await p.locator('.fieldnote').innerText(),/Dhauladhar/);assert.deepEqual(errors,[]);
+ console.log('PASS sourced stories, mobile/desktop layouts, historical search, source metadata and saved stories offline.');await c.close();
+}finally{await b.close()}
