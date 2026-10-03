@@ -24,6 +24,8 @@ Copy `.env.example` to `.env` if desired. `OPENAI_API_KEY` enables server-side A
 
 ## Working MVP
 
+Each of the 185 catalogue entries now has its own local image: 158 distinct Wikimedia Commons photographs with source/creator/licence credits and 27 original landscape illustrations where a suitable reusable photo was unavailable or ambiguous. Photos are matched by place name and may depict a feature or regional scene rather than the exact trek; the original source caption is linked. Illustrations are explicitly labelled and do not pretend to be destination photographs. Previously loaded local images can be cached for offline viewing. The homepage hero remains illustrative stock imagery.
+
 - Create a local account, sign in/out, and edit experience and preferred regions. Passwords use salted scrypt; sessions use HttpOnly SameSite cookies. SQLite in `data/vanora.sqlite` persists accounts, saves, activities and social interactions across server restarts. The shared demo account is expressly labelled; personal accounts isolate data.
 - Explore an original forest atlas with 185 curated entries covering all 28 states and 8 union territories. Search and filter by state, region, place type, difficulty, distance, gain and duration; use catalogue, state directory or map views. Compare up to three places. Undocumented measurements stay explicitly unknown.
 - Build private trip plans with dates, places, packing checklists, group budgets and per-person costs. Download a calendar reminder. Collect private self-reported passport stamps and milestones; nominate missing places with a source link. Nominations remain private and unreviewed, and are not automatically published.

@@ -1,6 +1,7 @@
 ﻿import './style.css';
 import './atlas.css';
 import './stories.css';
+import './trail-images.css';
 import './nearby.css';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
